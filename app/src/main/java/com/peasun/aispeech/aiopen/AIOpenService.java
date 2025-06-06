@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,13 +22,19 @@ import com.sharjeck.livetvdemo.R;
  */
 public class AIOpenService extends Service {
     private String TAG = "AIOpenService";
+    private Handler mHandler;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForce();
+        mHandler.removeCallbacks(stopServiceTask);
+        mHandler.postDelayed(stopServiceTask, 15000);
+
         if (intent != null) {
             Bundle data = intent.getExtras();
             String action = intent.getAction();
+
+            System.out.print(TAG + ",action," + action);
             if (!TextUtils.isEmpty(action)) {
                 switch (action) {
                     case AIOpenConstant.AI_OPEN_ACTION_LIVE: {
@@ -59,8 +66,21 @@ public class AIOpenService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mHandler = new Handler(this.getMainLooper());
     }
 
+    private Runnable stopServiceTask = new Runnable() {
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            try {
+                System.out.print(TAG + ",stop service");
+                stopSelf();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
     @Override
     public void onDestroy() {
